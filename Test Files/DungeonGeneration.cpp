@@ -351,7 +351,7 @@ void Dungeon::generateDungeon()
                 //Changing the logic to support the fact that every "2" must have an access point.
                 int SideToGenerateRoll = diceRoll(0,2);
                 //1 is left only, 2 is right only, 0 is both
-                if (SideToGenerateRoll >= 0)
+                if (SideToGenerateRoll >= 0)//FIX LATER. Test to make the hallway always generate for testing purposes.
                     {
                         int VerticalCounter = 0;
                         int VerticalCounterMax = cols/7;
