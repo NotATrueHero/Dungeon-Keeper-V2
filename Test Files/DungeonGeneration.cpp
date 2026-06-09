@@ -418,7 +418,7 @@ void Dungeon::generateDungeon()
                             }
                     }
                 //Right
-                // Both
+                // Both. Edit:Plan on implementing a system to run both side generators if the dice allows it, otherwise it would just be duplicate code. I think I have enough of that right now.
                 }
         }
     }
