@@ -23,7 +23,7 @@ public:
 };
 
 int main() {
-    Dungeon dungeon(12, 12);
+    Dungeon dungeon(12, 13);
     dungeon.generateFirstRow();
     dungeon.generateExit();
     dungeon.generateDungeon();
@@ -236,7 +236,7 @@ void Dungeon::generateDungeon()
             else {WeightedLocationValue = 2; dungeonLayout[m+1][i] = 9;}
 
             dungeonLayout[m][i] = WeightedLocationValue;
-            if ((m % 2 == 0) && WeightedLocationValue == 2){dungeonLayout[m][i] = 3; dungeonLayout[m+1][i] = 2; dungeonLayout[m+2][i] = 9;}
+            if ((m % 2 == 0) && WeightedLocationValue == 2){dungeonLayout[m][i] = 3; dungeonLayout[m+1][i] = 2; if (dungeonLayout[m+2][i] == 99) dungeonLayout[m+2][i] = 9;}
 
             if (WeightedLocationValue == 2){m = (dungeonLayout.size());}
             }
@@ -263,24 +263,24 @@ void Dungeon::generateDungeon()
                                 VerticalCounter ++;
                                 dungeonLayout[r][i] = 1;
                                 dungeonLayout[r+1][i] = 3;
-                                for (int j = r+2; (j < rows - 2) && (dungeonLayout[j][i] == 99); j++)
+                                for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][i] == 99); j++)
                                     {
                                     int VerticalWeightedLocationValue = diceRoll(0,20);
                                     int MiddlePoint = 8; //Quick Tool to edit chances.
                                     if (VerticalWeightedLocationValue <= MiddlePoint)
                                         {
-                                        dungeonLayout[j][i] = 2;
-                                        dungeonLayout[j+1][i] = 9;
+                                        if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 2;
+                                        if (dungeonLayout[j+1][i] == 99) dungeonLayout[j+1][i] = 9;
                                         if (j % 2 == 0)
                                             {
                                             dungeonLayout[j][i] = 3;
                                             dungeonLayout[j+1][i] = 2;
-                                            dungeonLayout[j+2][i] = 9;
+                                            if (dungeonLayout[j+2][i] == 99) dungeonLayout[j+2][i] = 9;
                                             }
                                         }
                                     else if (VerticalWeightedLocationValue > MiddlePoint)
                                         {
-                                            dungeonLayout[j][i] = 3;
+                                            if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 3;
                                         }
                                     }
                             }
@@ -288,6 +288,7 @@ void Dungeon::generateDungeon()
                         else if (WeightedLocationValue > 10)
                             {
                             dungeonLayout[r][i] = 0;
+                            if (dungeonLayout[r+1][i] == 99) dungeonLayout[r+1][i] = 9;
                             }
                         else
                             {
@@ -305,35 +306,36 @@ void Dungeon::generateDungeon()
                     for (int i = c+2; (i < cols-1) && (dungeonLayout[r][i] == 99); i++)
                     {
                         int WeightedLocationValue = diceRoll(0,20);
-                        if (((VerticalCounter <= VerticalCounterMax) && (WeightedLocationValue <= 10)) && (dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9) && (dungeonLayout[r][i+1] == 99) && (dungeonLayout[r+1][i] == 99))
+                        if (((VerticalCounter <= VerticalCounterMax) && (WeightedLocationValue <= 10)) && (dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9) && (dungeonLayout[r][i+1] == 99) && (dungeonLayout[r+1][i] == 99) && (dungeonLayout[r][i-1] == 99 || dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9))
                         {
                             VerticalCounter++;
                             dungeonLayout[r][i] = 1;
                             dungeonLayout[r+1][i] = 3;
-                            for (int j = r+2; (j < rows - 2) && (dungeonLayout[j][i] == 99); j++)
+                            for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][i] == 99); j++)
                                 {
                                 int VerticalWeightedLocationValue = diceRoll(0,20);
                                 int MiddlePoint = 8; //Quick Tool to edit chances.
                                 if (VerticalWeightedLocationValue <= MiddlePoint)
                                     {
-                                    dungeonLayout[j][i] = 2;
-                                    dungeonLayout[j+1][i] = 9;
+                                    if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 2;
+                                    if (dungeonLayout[j+1][i] == 99) dungeonLayout[j+1][i] = 9;
                                     if (j % 2 == 0)
                                         {
                                         dungeonLayout[j][i] = 3;
                                         dungeonLayout[j+1][i] = 2;
-                                        dungeonLayout[j+2][i] = 9;
+                                        if (dungeonLayout[j+2][i] == 99) dungeonLayout[j+2][i] = 9;
                                         }
                                     }
                                 else if (VerticalWeightedLocationValue > MiddlePoint)
                                     {
-                                        dungeonLayout[j][i] = 3;
+                                        if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 3;
                                     }
                                 }
                         }
                         else if (WeightedLocationValue > 10)
                             {
                             dungeonLayout[r][i] = 0;
+                            if (dungeonLayout[r+1][i] == 99) dungeonLayout[r+1][i] = 9;
                             }
                         else
                             {
@@ -351,7 +353,11 @@ void Dungeon::generateDungeon()
                 //Changing the logic to support the fact that every "2" must have an access point.
                 int SideToGenerateRoll = diceRoll(0,2);
                 //1 is left only, 2 is right only, 0 is both
-                if (SideToGenerateRoll >= 0)//FIX LATER. Test to make the hallway always generate for testing purposes.
+                bool GenerateBothSides = false;
+
+                if (SideToGenerateRoll == 2){GenerateBothSides = true;}
+
+                if ((SideToGenerateRoll == 0) || GenerateBothSides)
                     {
                         int VerticalCounter = 0;
                         int VerticalCounterMax = cols/7;
@@ -372,39 +378,38 @@ void Dungeon::generateDungeon()
                                     else if (LocationValue == 1)
                                         {
 
-                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9) && (dungeonLayout[r+1][i] == 99))
+                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9) && (dungeonLayout[r+1][i] == 99) && (dungeonLayout[r][i+1] == 99 || dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9))
                                                 {
                                                     dungeonLayout[r][i] = 1;
                                                     dungeonLayout[r+1][i] = 3;
                                                     Acessible = true;
                                                     VerticalCounter ++;
-                                                    for (int j = r+2; (j < rows - 2) && (dungeonLayout[j][i] == 99); j++)
+                                                    for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][i] == 99); j++)
                                                         {
                                                         int VerticalWeightedLocationValue = diceRoll(0,20);
                                                         int MiddlePoint = 8; //Quick Tool to edit chances.
                                                         if (VerticalWeightedLocationValue <= MiddlePoint)
                                                             {
-                                                            dungeonLayout[j][i] = 2;
-                                                            dungeonLayout[j+1][i] = 9;
+                                                            if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 2;
+                                                            if (dungeonLayout[j+1][i] == 99) dungeonLayout[j+1][i] = 9;
                                                             if (j % 2 == 0)
                                                                 {
                                                                 dungeonLayout[j][i] = 3;
                                                                 dungeonLayout[j+1][i] = 2;
-                                                                dungeonLayout[j+2][i] = 9;
+                                                                if (dungeonLayout[j+2][i] == 99) dungeonLayout[j+2][i] = 9;
                                                                 }
                                                             }
                                                         else if (VerticalWeightedLocationValue > MiddlePoint)
                                                             {
-                                                                dungeonLayout[j][i] = 3;
+                                                                if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 3;
                                                             }
                                                         }
                                                 }
-                                            else {dungeonLayout[r][i] = 0;}
+                                            else {dungeonLayout[r][i] = 0; if (dungeonLayout[r+1][i] == 99) dungeonLayout[r+1][i] = 9;}
                                         }
 
                                     else {
                                         //Quick Fix, in cases where nine spawns first.
-                                        if (i == c-2) {SideToGenerateRoll = 2;}
                                         dungeonLayout[r][i] = 9;
                                         break;
 
@@ -418,8 +423,75 @@ void Dungeon::generateDungeon()
                             }
                     }
                 //Right
-                // Both. Edit:Plan on implementing a system to run both side generators if the dice allows it, otherwise it would just be duplicate code. I think I have enough of that right now.
+                if ((SideToGenerateRoll == 1) || GenerateBothSides)
+                    {
+                        int VerticalCounter = 0;
+                        int VerticalCounterMax = cols/7;
+
+                        for(int i = c+1; i < cols -1; i++)
+                            {
+                                int LocationValue = diceRoll(0, 2);
+                                if (LocationValue == 2)
+                                    {
+                                    if (diceRoll(0,3) > 1) {LocationValue = 9;} //Just to make them rarer. Increase as needed.
+                                    else {LocationValue = 1;}
+                                    }
+
+                                if (dungeonLayout[r][i] == 99)
+                                    {
+                                    if (LocationValue == 0){dungeonLayout[r][i] = 0;}
+
+                                    else if (LocationValue == 1)
+                                        {
+
+                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9) && (dungeonLayout[r+1][i] == 99))
+                                                {
+                                                    dungeonLayout[r][i] = 1;
+                                                    dungeonLayout[r+1][i] = 3;
+                                                    Acessible = true;
+                                                    VerticalCounter ++;
+                                                    for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][i] == 99); j++)
+                                                        {
+                                                        int VerticalWeightedLocationValue = diceRoll(0,20);
+                                                        int MiddlePoint = 8; //Quick Tool to edit chances.
+                                                        if (VerticalWeightedLocationValue <= MiddlePoint)
+                                                            {
+                                                            if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 2;
+                                                            if (dungeonLayout[j+1][i] == 99) dungeonLayout[j+1][i] = 9;
+                                                            if (j % 2 == 0)
+                                                                {
+                                                                dungeonLayout[j][i] = 3;
+                                                                dungeonLayout[j+1][i] = 2;
+                                                                if (dungeonLayout[j+2][i] == 99) dungeonLayout[j+2][i] = 9;
+                                                                }
+                                                            }
+                                                        else if (VerticalWeightedLocationValue > MiddlePoint)
+                                                            {
+                                                                if (dungeonLayout[j][i] == 99) dungeonLayout[j][i] = 3;
+                                                            }
+                                                        }
+                                                }
+                                            else {dungeonLayout[r][i] = 0; if (dungeonLayout[r+1][i] == 99) dungeonLayout[r+1][i] = 9;}
+                                        }
+
+                                    else {
+                                        //Quick Fix, in cases where nine spawns first.
+                                        dungeonLayout[r][i] = 9;
+                                        break;
+
+                                         }
+                                    }
+                                else
+                                    {
+                                    break;
+                                    }
+
+                            }
+                    }
+                //Write a Check to see if two walls spawned on side of the two
+                //Create a program that checks which sides generated and create a one with a verical hallway generater at the end of the hallway on side the two. If two halls spawned then two exits will be at the very end, only if the Acssible function wasn't made true.
                 }
+
         }
     }
     /* First Attmpt, Generated Numbers with some cohesion, failed to prevent number from spawning on side one another.
