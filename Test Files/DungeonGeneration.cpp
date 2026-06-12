@@ -229,6 +229,8 @@ void Dungeon::generateDungeon()
     {
         if (dungeonLayout[rows-(rows-1)][i] == 3 || dungeonLayout[rows-(rows-1)][i] == 1)
         {
+            // Skip if adjacent column already has a vertical hall (prevents adjacent 3s)
+            if (i > 1 && (dungeonLayout[rows-(rows-1)][i-1] == 3 || dungeonLayout[rows-(rows-1)][i-1] == 1)) continue;
             for (int m = 2; m < (dungeonLayout.size()-2); m++)
             {
             int WeightedLocationValue = diceRoll(0,15);
@@ -246,6 +248,8 @@ void Dungeon::generateDungeon()
     //^ This was bothering me so much. At first it was a coin flip, now it's adjustable. Hopefully this inspires some more side hallways.
     for (int r = 2; r < rows - 1; r++)
     {
+        dungeonLayout[r][0] = 9;
+        dungeonLayout[r][cols-1] = 9;
         for (int c = 1; c < cols; c++)
         {
             if ((dungeonLayout[r][c] == 3) && (r % 2 != 0))// if odd.
@@ -350,6 +354,15 @@ void Dungeon::generateDungeon()
 
                 bool Acessible = false;
 
+                // Pre-scan: if a 1 already exists nearby on this row, this 2 is accessible
+                for (int scan = c-1; scan > 0 && dungeonLayout[r][scan] != 9; scan--)
+                    if (dungeonLayout[r][scan] == 1 || dungeonLayout[r][scan] == 3) Acessible = true;
+                for (int scan = c+1; scan < cols-1 && dungeonLayout[r][scan] != 9; scan++)
+                    if (dungeonLayout[r][scan] == 1 || dungeonLayout[r][scan] == 3) Acessible = true;
+
+                if (!Acessible)
+                {
+
                 //Changing the logic to support the fact that every "2" must have an access point.
                 int SideToGenerateRoll = diceRoll(0,2);
                 //1 is left only, 2 is right only, 0 is both
@@ -378,7 +391,7 @@ void Dungeon::generateDungeon()
                                     else if (LocationValue == 1)
                                         {
 
-                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9) && (dungeonLayout[r+1][i] == 99) && (dungeonLayout[r][i+1] == 99 || dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9))
+                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9 || dungeonLayout[r][i+1] == 2) && (dungeonLayout[r+1][i] == 99) && (dungeonLayout[r][i+1] == 99 || dungeonLayout[r][i+1] == 0 || dungeonLayout[r][i+1] == 9 || dungeonLayout[r][i+1] == 2))
                                                 {
                                                     dungeonLayout[r][i] = 1;
                                                     dungeonLayout[r+1][i] = 3;
@@ -444,7 +457,7 @@ void Dungeon::generateDungeon()
                                     else if (LocationValue == 1)
                                         {
 
-                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9) && (dungeonLayout[r+1][i] == 99))
+                                            if ((VerticalCounter <= VerticalCounterMax) && (dungeonLayout[r][i-1] == 0 || dungeonLayout[r][i-1] == 9 || dungeonLayout[r][i-1] == 2) && (dungeonLayout[r+1][i] == 99))
                                                 {
                                                     dungeonLayout[r][i] = 1;
                                                     dungeonLayout[r+1][i] = 3;
@@ -488,10 +501,73 @@ void Dungeon::generateDungeon()
 
                             }
                     }
-                //Write a Check to see if two walls spawned on side of the two
-                //Create a program that checks which sides generated and create a one with a verical hallway generater at the end of the hallway on side the two. If two halls spawned then two exits will be at the very end, only if the Acssible function wasn't made true.
+
+
+                // If neither side placed an access point, force one
+                if (!Acessible)
+                {
+                    // Prefer the side that has room and won't create adjacent 1s
+                    bool rightOK = (dungeonLayout[r][c+1] == 99 || dungeonLayout[r][c+1] == 0)
+                                && dungeonLayout[r][c+2] != 1;
+                    bool leftOK  = (dungeonLayout[r][c-1] == 99 || dungeonLayout[r][c-1] == 0)
+                                && dungeonLayout[r][c-2] != 1;
+                    if (rightOK)
+                    {
+                        dungeonLayout[r][c+1] = 1;
+                        if (dungeonLayout[r+1][c+1] == 99) dungeonLayout[r+1][c+1] = 3;
+                        for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][c+1] == 99); j++)
+                        {
+                            int V = diceRoll(0,20);
+                            if (V <= 8) {
+                                if (dungeonLayout[j][c+1] == 99) {
+                                    dungeonLayout[j][c+1] = 2;
+                                    if (dungeonLayout[j+1][c+1] == 99) dungeonLayout[j+1][c+1] = 9;
+                                    if (j % 2 == 0) {
+                                        dungeonLayout[j][c+1] = 3;
+                                        dungeonLayout[j+1][c+1] = 2;
+                                        if (dungeonLayout[j+2][c+1] == 99) dungeonLayout[j+2][c+1] = 9;
+                                    }
+                                }
+                            } else {
+                                if (dungeonLayout[j][c+1] == 99) dungeonLayout[j][c+1] = 3;
+                            }
+                        }
+                    }
+                    else if (leftOK)
+                    {
+                        dungeonLayout[r][c-1] = 1;
+                        if (dungeonLayout[r+1][c-1] == 99) dungeonLayout[r+1][c-1] = 3;
+                        for (int j = r+2; (j < rows - 3) && (dungeonLayout[j][c-1] == 99); j++)
+                        {
+                            int V = diceRoll(0,20);
+                            if (V <= 8) {
+                                if (dungeonLayout[j][c-1] == 99) {
+                                    dungeonLayout[j][c-1] = 2;
+                                    if (dungeonLayout[j+1][c-1] == 99) dungeonLayout[j+1][c-1] = 9;
+                                    if (j % 2 == 0) {
+                                        dungeonLayout[j][c-1] = 3;
+                                        dungeonLayout[j+1][c-1] = 2;
+                                        if (dungeonLayout[j+2][c-1] == 99) dungeonLayout[j+2][c-1] = 9;
+                                    }
+                                }
+                            } else {
+                                if (dungeonLayout[j][c-1] == 99) dungeonLayout[j][c-1] = 3;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Both sides blocked: convert 2 to 3+3+2 tower
+                        dungeonLayout[r][c] = 3;
+                        dungeonLayout[r+1][c] = 3;
+                        dungeonLayout[r+2][c] = 2;
+                        c = c-1;
+                    }
                 }
 
+                } // end if (!Acessible) - skip generation if already accessible
+
+            }
         }
     }
     /* First Attmpt, Generated Numbers with some cohesion, failed to prevent number from spawning on side one another.
