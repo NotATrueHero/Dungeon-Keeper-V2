@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <random>
 
@@ -38,14 +39,7 @@ int main() { //      (Y,X) Yeah don't ask.
     dungeon.ConvertDungeon();
 
     const auto& layout = dungeon.getLayout();
-    for (int i = 0; i < layout.size(); i++)
-    {
-        for (int j = 0; j < layout[i].size(); j++)
-        {
-           std::cout << layout[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
+
     system("pause");
     return 0;
 }*/
@@ -723,13 +717,12 @@ void Dungeon::FillGaps()
 }
 
 void Dungeon::ConvertDungeon()
-{ //Convert dungeon to a more readable format.
+{ //Convert dungeon to a readable format, preserve entrance (8) and walls (9).
     for (int i = 0; i < dungeonLayout.size(); i++)
     {
         for (int j = 0; j < dungeonLayout[i].size(); j++)
         {
-            if (dungeonLayout[i][j] == 8){j++;}
-            if (dungeonLayout[i][j] != 9)
+            if (dungeonLayout[i][j] != 9 && dungeonLayout[i][j] != 8)
             {
                 dungeonLayout[i][j] = 0;
             }
@@ -760,3 +753,27 @@ Then `generateDungeon()` drops vertical corridors from each shaft in the first r
 and at every odd row any 3 spawns side hallways left and right — placing floors and further downward shafts with their own vertical extensions.
 Every 2 is guaranteed a path down by building hallways and forcing a 1 if the dice fail to place one.
 The final row is laid out separately, all remaining empty cells become walls, and everything non-wall collapses to a uniform floor for the final map. */
+
+// Global dungeon instance — generate once, access from any file
+Dungeon* dungeon = nullptr;
+
+void generateDungeonBase() {
+    int rows, cols;
+    std::cout << "Enter dungeon rows (Y): ";
+    std::cin >> rows;
+    std::cout << "Enter dungeon cols (X): ";
+    std::cin >> cols;
+
+    if (dungeon) delete dungeon;
+    dungeon = new Dungeon(rows, cols);
+    dungeon->generateFirstRow();
+    dungeon->generateExit();
+    dungeon->generateDungeon();
+    dungeon->generateFinalRow();
+    dungeon->FillGaps();
+    dungeon->ConvertDungeon();
+}
+
+const std::vector<std::vector<int>>& getDungeonLayout() {
+    return dungeon->getLayout();
+}
