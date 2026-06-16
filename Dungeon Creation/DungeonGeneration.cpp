@@ -196,7 +196,6 @@ void Dungeon::generateFirstRow() {
     }
 
     //Ensuring An Exit.
-    // First a Check, since the orignal function wasn't correctly activating?
     UpwardsMobilitySquareGenerated = false;
     for (int i = 1; i < cols-1; i++)
     {
