@@ -44,7 +44,7 @@ bool Navigate::inputCheck(int xIn, int yIn) {
     if (layout[y + yIn][x + xIn] != 9) return true;
     return false;
 }
-//This function was Ai Generated
+//This function was Ai Generated. As per the last time, I've attmpted to avoid this. Since this was more "cosmetic", I decided it was okay.
 void Navigate::display() {
     using namespace ftxui;
     const auto& layout = getDungeonLayout();
