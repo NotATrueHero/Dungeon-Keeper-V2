@@ -52,5 +52,18 @@ g++ -std=c++17 \
     ../FTXUI/src/ftxui/screen/string.cpp \
     ../FTXUI/src/ftxui/screen/surface.cpp \
     ../FTXUI/src/ftxui/screen/terminal.cpp \
+    ../FTXUI/src/ftxui/component/app.cpp \
+    ../FTXUI/src/ftxui/component/animation.cpp \
+    ../FTXUI/src/ftxui/component/button.cpp \
+    ../FTXUI/src/ftxui/component/catch_event.cpp \
+    ../FTXUI/src/ftxui/component/component.cpp \
+    ../FTXUI/src/ftxui/component/component_options.cpp \
+    ../FTXUI/src/ftxui/component/container.cpp \
+    ../FTXUI/src/ftxui/component/event.cpp \
+    ../FTXUI/src/ftxui/component/renderer.cpp \
+    ../FTXUI/src/ftxui/component/task.cpp \
+    ../FTXUI/src/ftxui/component/task_runner.cpp \
+    ../FTXUI/src/ftxui/component/task_queue.cpp \
+    ../FTXUI/src/ftxui/component/terminal_input_parser.cpp \
     Navigation.cpp \
     -o nav.exe

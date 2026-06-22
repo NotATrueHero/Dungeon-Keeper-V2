@@ -1,6 +1,7 @@
 #include "../Dungeon Creation/DungeonGeneration.cpp"
 #include <ftxui/dom/elements.hpp>
-#include <ftxui/screen/screen.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/screen/color.hpp>
 #include <string>
 
@@ -28,6 +29,7 @@ class Navigate {
 int main() {
     Navigate nav;
     nav.display();
+    nav.inputUI();
     return 0;
 }
 
@@ -100,4 +102,79 @@ void Navigate::moveSouth()   { if (inputCheck(0, 1))  y++; }
 void Navigate::moveWest()    { if (inputCheck(-1, 0)) x--; }
 
 void Navigate::inputUI() {
+    using namespace ftxui;
+
+    auto North = [this] { moveNorth(); };
+    auto East  = [this] { moveEast();  };
+    auto South = [this] { moveSouth(); };
+    auto West  = [this] { moveWest();  };
+
+    std::string label_up    = " ^ ";
+    std::string label_down  = " v ";
+    std::string label_left  = " < ";
+    std::string label_right = " > ";
+
+    auto btn_up    = Button(&label_up,    North);
+    auto btn_down  = Button(&label_down,  South);
+    auto btn_left  = Button(&label_left,  West);
+    auto btn_right = Button(&label_right, East);
+
+    auto map_view = Renderer([this] {
+        const auto& layout = getDungeonLayout();
+        int lightSize = 4;
+        int mapH = (int)layout.size();
+        int mapW = (int)layout[0].size();
+
+        Elements rows;
+        for (int dy = -lightSize; dy <= lightSize; dy++) {
+            Elements cols;
+            for (int dx = -lightSize; dx <= lightSize; dx++) {
+                int xDis = x + dx;
+                int yDis = y + dy;
+
+                // Out of bounds = empty/blocked
+                if (xDis < 0 || xDis >= mapW || yDis < 0 || yDis >= mapH) {
+                    cols.push_back(text("  "));
+                    continue;
+                }
+
+                bool blocked = false;
+                if (xDis != x || yDis != y) {
+                    int adx = abs(dx), ady = abs(dy);
+                    int steps = adx > ady ? adx : ady;
+                    for (int s = 1; s < steps; s++) {
+                        int cx = x + (dx * s + (dx>0?steps/2:-steps/2)) / steps;
+                        int cy = y + (dy * s + (dy>0?steps/2:-steps/2)) / steps;
+                        if (cx < 0 || cx >= mapW || cy < 0 || cy >= mapH || layout[cy][cx] == 9)
+                            { blocked = true; break; }
+                    }
+                }
+
+                std::string cell;
+                Color fg = Color::Default;
+                if (blocked) {
+                    cell = "  ";
+                } else if (xDis == x && yDis == y) {
+                    cell = "@@"; fg = Color::Yellow;
+                } else if (layout[yDis][xDis] == 9) {
+                    cell = "##"; fg = Color::GrayDark;
+                } else if (layout[yDis][xDis] == 8) {
+                    cell = "++"; fg = Color::Green;
+                } else {
+                    cell = "..";
+                }
+                cols.push_back(text(cell) | color(fg));
+            }
+            rows.push_back(hbox(std::move(cols)));
+        }
+        return vbox(std::move(rows)) | border | size(WIDTH, EQUAL, 20) | size(HEIGHT, EQUAL, 10);
+    });
+
+    auto container = Container::Horizontal({
+        map_view,
+        Container::Vertical({btn_up, btn_down, btn_left, btn_right}),
+    });
+
+    auto screen = App::Fullscreen();
+    screen.Loop(container);
 }

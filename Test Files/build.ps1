@@ -1,6 +1,7 @@
 $FTXUI = "..\FTXUI"
 $dom = "$FTXUI\src\ftxui\dom"
 $screen = "$FTXUI\src\ftxui\screen"
+$component = "$FTXUI\src\ftxui\component"
 
 $sources = @(
     "$dom\automerge.cpp", "$dom\blink.cpp", "$dom\bold.cpp", "$dom\border.cpp",
@@ -18,7 +19,12 @@ $sources = @(
     "$dom\util.cpp", "$dom\vbox.cpp",
     "$screen\box.cpp", "$screen\color.cpp", "$screen\color_info.cpp",
     "$screen\screen.cpp", "$screen\string.cpp", "$screen\surface.cpp",
-    "$screen\terminal.cpp"
+    "$screen\terminal.cpp",
+    "$component\app.cpp", "$component\animation.cpp", "$component\button.cpp", "$component\catch_event.cpp",
+    "$component\component.cpp", "$component\component_options.cpp",
+    "$component\container.cpp", "$component\event.cpp",
+    "$component\renderer.cpp", "$component\task.cpp", "$component\task_runner.cpp", "$component\task_queue.cpp",
+    "$component\terminal_input_parser.cpp"
 )
 
 g++ -std=c++17 -I "$FTXUI\include" -I "$FTXUI\src" @sources Navigation.cpp -o nav.exe
