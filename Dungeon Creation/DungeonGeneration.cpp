@@ -25,6 +25,7 @@ public:
     void generateFinalRow();
     void FillGaps();
     void ConvertDungeon();
+    void FillDungeonEventLocations();
 
     const std::vector<std::vector<int> >& getLayout() const { return dungeonLayout; }
 };
@@ -729,6 +730,27 @@ void Dungeon::ConvertDungeon()
     }
 }
 
+void Dungeon::FillDungeonEventLocations()
+{
+    for (int y = 1; y < rows; y++)
+    {
+        for (int x = 1; x < cols; x++)
+        {
+            if (dungeonLayout[y][x] == 0 && dungeonLayout[y][x-1] != 1 && dungeonLayout[y-1][x] != 1)
+            {
+                int EventRoll = diceRoll(1, rows+cols);
+                if (EventRoll > (rows+cols)/2)
+                {
+                    dungeonLayout[y][x] = 1; // Will be read as an event square
+
+                }
+            }
+            if (dungeonLayout[y][x] == 8)
+            {dungeonLayout[y-1][x] = 0;}
+        }
+    }
+}
+
 int diceRoll(int min, int max){
     std::random_device rd;  // Obtain a random number from hardware
     std::mt19937 eng(rd()); // Seed the generator
@@ -771,6 +793,7 @@ void generateDungeonBase() {
     dungeon->generateFinalRow();
     dungeon->FillGaps();
     dungeon->ConvertDungeon();
+    dungeon->FillDungeonEventLocations();
 }
 
 const std::vector<std::vector<int>>& getDungeonLayout() {
